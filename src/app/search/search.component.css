@@ -1,0 +1,87 @@
+#result-table {
+    margin-top: 8%;
+    background-color: white;
+}
+
+#search-box{
+    margin-top: 5%;
+    border: 1px solid #e4e1e1;
+    border-radius: 10px;
+    background-color: white;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+#form-label{
+    padding-right: 100%;
+}
+
+.star{
+    color: red;
+}
+
+
+#keyword{
+    border-radius: 8px;
+}
+
+#distance{
+    border-radius: 8px;
+}
+
+#category{
+    border-radius: 8px;
+}
+
+#location{
+    border-radius: 8px;
+}
+
+.button-div{
+    margin-bottom: 4%; 
+    margin-top: 4%;
+}
+
+#submit-button{
+    border-radius: 8px;
+    margin-right: 5%;
+}
+
+#clear-button{
+    border-radius: 8px;
+}
+
+#result-detail{
+    margin-top: 8%;
+    background-color: white;
+}
+
+.p-2{
+    flex: 0 0 50%;
+}
+
+
+#reservation-submit-div{
+    margin-top: 5%;
+}
+
+#result-detail-left-arrow{
+    width: 10%;
+    height: 10%;
+    padding-right: 98%;
+    color: inherit;
+}
+
+
+
+#business-detail-name-h1{
+    padding-top: 0;
+}
+
+#result-detail-bdetail{
+    padding-top: 3%;
+}

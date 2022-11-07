@@ -1,0 +1,31 @@
+<div class="container">
+    <div id="booking-table-div" *ngIf="!is_empty; else emptyPage">
+        <h1 style="text-align: center;">List of your reservations</h1>
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Business Name</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">E-mail</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of booking_array; let j=index;" [id]="i.id">
+                <th scope="row">{{j + 1}}</th>
+                <td>{{i.bname}}</td>
+                <td>{{i.date}}</td>
+                <td>{{i.time}}</td>
+                <td>{{i.email}}</td>
+                <td><a href="javascript:void(0);" (click)="onDelete(i.id, j)"><i class="bi bi-trash"></i></a></td>
+              </tr>
+            </tbody>
+          </table>
+    </div>
+    
+    <ng-template #emptyPage>
+        <h1 style="color: red;">No reservations to show</h1>
+    </ng-template>
+</div>

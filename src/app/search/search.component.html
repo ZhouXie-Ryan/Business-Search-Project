@@ -1,0 +1,223 @@
+<div id="search-box">
+    <h2 style="padding-top: 3%;" class="font-weight-bold">Business search</h2>
+    <form ngNativeValidate #form1>
+        <div class="form-group">
+            <label for="keyword" id="form-label">Keyword&nbsp;<span class="star">*</span></label>
+            <input type="text" class="form-control form-control-lg" id="keyword" name="term" 
+            [(ngModel)]="keyword" required [matAutocomplete]="auto" (input)="requestAutoComplete($event)">
+
+            <mat-autocomplete #auto="matAutocomplete">
+              <mat-option *ngFor="let option of options" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="distance" id="form-label">Distance</label>
+                <input type="number" class="form-control form-control-lg" placeholder="10" id="distance" name="distance" [(ngModel)]="distance" min="0" max="20">
+            </div>
+            <div class="form-group col-md-6" style="padding-right: 10%;">
+                <label for="category" id="form-label">Category</label>
+                <select class="form-control form-control-lg" id="category" name="category" [(ngModel)]="category">
+                    <option value="all">Default</option>
+                    <option value="arts">Arts & Entertainment</option>
+                    <option value="health">Health & Medical</option>
+                    <option value="hotels">Hotels & Travel</option>
+                    <option value="food">Food</option>
+                    <option value="professional">Professional Services</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="location" id="form-label">Location&nbsp;<span class="star">*</span></label>
+            <input type="text" class="form-control form-control-lg" id="location" name="location" [(ngModel)]="location" [required]="!autoDetect" [disabled]="autoDetect">
+        </div>
+
+        <div class="form-check" style="text-align: left;">
+            <input type="checkbox" class="form-check-input" id="autoDetect" name="autoDetect" [(ngModel)]="autoDetect">
+            <label class="form-check-label" for="autoDetect">&nbsp;Auto-detect my location</label>
+        </div>
+        
+        <div class="button-div">
+            <button type="submit" class="btn btn-danger btn-lg" id="submit-button" (click)="form1.checkValidity() ? submitForm() : null">Submit</button>
+            <button type="button" class="btn btn-primary btn-lg" id="clear-button" (click)="clearAll()">Clear</button>
+        </div>
+      </form>
+</div>
+
+<div id="result-table" *ngIf="display_table">
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Image</th>
+            <th scope="col">Business Name</th>
+            <th scope="col">Rating</th>
+            <th scope="col">Distance (miles)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of businesses_array;" (click)="clickName(i.id)" style="cursor: pointer">
+            <th scope="row">{{i.number}}</th>
+            <td><img [src]="i.image" style="width:100px; height:100px"></td>
+            <td><a [id]="'resultAnchor' + i.number">{{i.name}}</a></td>
+            <td>{{i.rating}}</td>
+            <td>{{i.dis}}</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
+
+<div id="result-detail" *ngIf="display_detail">
+  <a href="javascript:void(0);" id="result-detail-left-arrow" (click)="returnBack()"><i class="bi bi-arrow-left  fa-lg"></i></a>
+  <h1 id="business-detail-name-h1">{{business_detail.name}}</h1>
+  <mat-tab-group mat-align-tabs="center" backgroundColor="primary">
+    <mat-tab id="business-detail" label="Business details">
+      <div class="d-flex flex-wrap justify-content-around align-content-start" id="result-detail-bdetail">
+        <div class="p-2">
+          <h1>Address</h1>
+          <p>{{business_detail.address}}</p>
+        </div>
+  
+        <div class="p-2">
+          <h1>Category</h1>
+          <p>{{business_detail.cat}}</p>
+        </div>
+  
+        <div class="p-2">
+          <h1>Phone</h1>
+          <p>{{business_detail.phone}}</p>
+        </div>
+  
+        <div class="p-2">
+          <h1>Price range</h1>
+          <p>{{business_detail.price}}</p>
+        </div>
+  
+        <div class="p-2">
+          <h1>Status</h1>
+          <p>{{business_detail.status}}</p>
+        </div>
+  
+        <div class="p-2">
+          <h1>Visit yelp for more</h1>
+          <a [href]="business_detail.url" target="_blank">Business link</a>
+        </div>
+      </div>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Reserve Now
+      </button>
+
+
+
+      <div>
+        Share on: twitter facebook
+      </div>
+  
+      <div>
+        <img>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Map location">
+      <google-map [width]="null"></google-map>
+    </mat-tab>
+
+    <mat-tab label="Reviews">
+      <table class="table table-striped" style="text-align: left; margin: 0;">
+        <tbody>
+          <tr *ngFor="let i of business_review;">
+            <td>
+              <p style="font-weight: bold; margin-bottom: 0;">{{i.name}}</p>
+              <p>Rating: {{i.rating}}/5</p>
+              <p>{{i.comment}}</p>
+              <p>{{i.date}}</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exampleModalLabel">Reservation Form</h2>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        
+      </div>
+      <div class="modal-body">
+        <form ngNativeValidate #form2>
+          <h2 style="margin-bottom: 0;">{{business_detail.name}}</h2>
+          <div class="form-group">
+            <label for="reservation-email" id="form-label">Email</label>
+            <input type="email" class="form-control" id="reservation-email" name="email" [(ngModel)]="email" required>
+            <div class="invalid-feedback">
+              Email is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reservation-date" id="form-label">Date</label>
+            <input type="date" class="form-control" id="reservation-date" name="date" [(ngModel)]="date" required>
+          </div>
+
+          <div class="form-row">
+            <label for="reservation-time1" id="form-label">Time</label>
+            <div class="col col-md-3">
+              <select class="form-control" id="reservation-time1" name="hour" [(ngModel)]="time1" required>
+                <option selected disabled hidden style='display: none' value=''></option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+              </select>
+            </div>
+            <div class="col col-md-3">
+              <select class="form-control" id="reservation-time1" name="minute" [(ngModel)]="time2" required>
+                <option selected disabled hidden style='display: none' value=''></option>
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+            </div>
+            <i class='far fa-clock'></i>
+          </div>
+          
+          <div id="reservation-submit-div">
+            <button type="submit" class="btn btn-danger" id="submit-reservation-button" (click)="form2.checkValidity()? submitReservationForm() : null">Submit</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+
+
+
+
+
+
+
