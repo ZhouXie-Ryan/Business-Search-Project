@@ -1,42 +1,28 @@
 const express = require('express');
-const app = express(),
-      bodyParser = require("body-parser");
-const port = 3080;
+const app = express();
+const port = (process.env.PORT) || 8080;
 const path = require('path');
-const cors = require('cors');
+// const cors = require('cors');
 const axios = require('axios');
-const { parse } = require('path');
-
+const publicPath = path.join(__dirname, "/dist/hw8");
 const YELP_AUTH_KEY = 'Bearer eltP76N376mghdWzP1rniJqT-AavUFpjIkvmgkcH_HHGJAlpeA6FdD8sdukTQRsNq-yjKu91zLzKwEs-aBvj5Y41O5x39nvOJIVAOH7T8msYETHzbwGsvqC727gzY3Yx';
 
-app.use(express.static(process.cwd()+"/dist/hw8/"));
-
-app.get('/', (req,res) => {
-    res.sendFile(process.cwd() + "/dist/hw8/index.html");
-});
-
-// app.get('/search', (req,res) => {
-//     res.send('search');
-// });
-
-// app.get('/bookings', (req,res) => {
-//     res.send('booking');
-// });
+app.use(express.static(publicPath));
 
 // app.use(cors({
 //     origin: '*'
 // }));
 
-// app.get('/', (req,res) => {
-//     res.send('index');
-// });
+app.get('/', (req,res) => {
+    res.sendFile(__dirname + "/dist/hw8/index.html");
+});
 
 app.get('/search', (req,res) => {
-    res.sendFile(process.cwd() + "/dist/hw8/index.html");
+    res.sendFile(__dirname + "/dist/hw8/index.html");
 });
 
 app.get('/booking', (req,res) => {
-    res.sendFile(process.cwd() + "/dist/hw8/index.html");
+    res.sendFile(__dirname + "/dist/hw8/index.html");
 });
 
 app.get('/query', (req,res) => {
@@ -62,7 +48,7 @@ app.get('/query', (req,res) => {
         axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
                 address : location,
-                key : 'AIzaSyBoQj67B2dyysSyGHFNtrhKJ_cuDnUdjls'
+                key : 'AIzaSyBbnaHmkNxX3AYDtSqm8EpLe3gN2NBsQ2k'
             }
         })
         .then(resp => {

@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-search',
@@ -9,8 +8,8 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 })
 export class SearchComponent implements OnInit {
 
-  hostName = "http://localhost:3080/";
-
+  hostName = "https://business-search-project-zxryan.uw.r.appspot.com/";
+  // hostName = "https://localhost:8080/";
 
   closeResult = '';
 
