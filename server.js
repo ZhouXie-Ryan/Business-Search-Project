@@ -168,7 +168,7 @@ app.get('/autocomplete', (req,res) => {
         res.send(response.data);
     })
     .catch((e) => {
-        console.log("YELP AUTOCOMPLETE GET ERROR!", e);
+        console.log("YELP AUTOCOMPLETE GET ERROR!");
     });
 
 });
