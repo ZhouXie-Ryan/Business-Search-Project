@@ -9,11 +9,11 @@ const { parse } = require('path');
 
 const YELP_AUTH_KEY = 'Bearer eltP76N376mghdWzP1rniJqT-AavUFpjIkvmgkcH_HHGJAlpeA6FdD8sdukTQRsNq-yjKu91zLzKwEs-aBvj5Y41O5x39nvOJIVAOH7T8msYETHzbwGsvqC727gzY3Yx';
 
-// app.use(express.static(process.cwd()+"/dist/hw8/"));
+app.use(express.static(process.cwd()+"/dist/hw8/"));
 
-// app.get('/', (req,res) => {
-//     res.sendFile(process.cwd() + "/dist/hw8/index.html");
-// });
+app.get('/', (req,res) => {
+    res.sendFile(process.cwd() + "/dist/hw8/index.html");
+});
 
 // app.get('/search', (req,res) => {
 //     res.send('search');
@@ -23,15 +23,23 @@ const YELP_AUTH_KEY = 'Bearer eltP76N376mghdWzP1rniJqT-AavUFpjIkvmgkcH_HHGJAlpeA
 //     res.send('booking');
 // });
 
-app.use(cors({
-    origin: '*'
-}));
+// app.use(cors({
+//     origin: '*'
+// }));
 
-app.get('/', (req,res) => {
-    res.send('index');
-});
+// app.get('/', (req,res) => {
+//     res.send('index');
+// });
 
 app.get('/search', (req,res) => {
+    res.sendFile(process.cwd() + "/dist/hw8/index.html");
+});
+
+app.get('/booking', (req,res) => {
+    res.sendFile(process.cwd() + "/dist/hw8/index.html");
+});
+
+app.get('/query', (req,res) => {
     let term = req.query['term'];
     let latitude = req.query['latitude'];
     let longitude = req.query['longitude'];
@@ -45,6 +53,10 @@ app.get('/search', (req,res) => {
     }
 
     console.log(term, latitude, longitude, categories, radius, location, checkbox);
+    radius = parseFloat(radius);
+    radius = radius * 1609.34;
+    radius = parseInt(radius);
+    radius = radius + "";
         
     if(checkbox == 'false') {
         axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -53,41 +65,56 @@ app.get('/search', (req,res) => {
                 key : 'AIzaSyBoQj67B2dyysSyGHFNtrhKJ_cuDnUdjls'
             }
         })
-        .then(res => {
+        .then(resp => {
             console.log("CALL GOOGLE MAP API");
-            latitude = res.data.results[0].geometry.location.lat;
-            longitude = res.data.results[0].geometry.location.lng;
+            latitude = resp.data.results[0].geometry.location.lat;
+            longitude = resp.data.results[0].geometry.location.lng;
+            axios.get('https://api.yelp.com/v3/businesses/search', {
+                headers: {
+                    'Authorization' : YELP_AUTH_KEY
+                },
+        
+                params: {
+                    term : term,
+                    latitude : latitude,
+                    longitude : longitude,
+                    categories : categories,
+                    radius : radius
+                }
+            })
+            .then(response => {
+                console.log("CALL YELP API");
+                res.send(response.data);
+            })
+            .catch((e) => {
+                console.log("YELP GET IP ERROR!", e);
+            });
         })
         .catch((e) => {
             console.log("GOOGLE MAP GET IP ERROR!", e);
         });
+    } else {
+        axios.get('https://api.yelp.com/v3/businesses/search', {
+            headers: {
+                'Authorization' : YELP_AUTH_KEY
+            },
+    
+            params: {
+                term : term,
+                latitude : latitude,
+                longitude : longitude,
+                categories : categories,
+                radius : radius
+            }
+        })
+        .then(response => {
+            console.log("CALL YELP API");
+            res.send(response.data);
+        })
+        .catch((e) => {
+            console.log("YELP GET IP ERROR!", e);
+        });
     }
-
-    radius = parseFloat(radius);
-    radius = radius * 1609.34;
-    radius = parseInt(radius);
-    radius = radius + "";
-
-    axios.get('https://api.yelp.com/v3/businesses/search', {
-        headers: {
-            'Authorization' : YELP_AUTH_KEY
-        },
-
-        params: {
-            term : term,
-            latitude : latitude,
-            longitude : longitude,
-            categories : categories,
-            radius : radius
-        }
-    })
-    .then(response => {
-        console.log("CALL YELP API");
-        res.send(response.data);
-    })
-    .catch((e) => {
-        console.log("YELP GET IP ERROR!", e);
-    });
 
 });
 
@@ -124,6 +151,24 @@ app.get('/review', (req,res) => {
     })
     .catch((e) => {
         console.log("YELP REVIEW GET IP ERROR!", e);
+    });
+
+});
+
+
+app.get('/autocomplete', (req,res) => {
+    let inputValue = req.query['inputValue'];
+
+    axios.get('https://api.yelp.com/v3/autocomplete?text=' + inputValue , {
+        headers: {
+            'Authorization' : YELP_AUTH_KEY
+        }
+    })
+    .then(response => {
+        res.send(response.data);
+    })
+    .catch((e) => {
+        console.log("YELP AUTOCOMPLETE GET ERROR!", e);
     });
 
 });

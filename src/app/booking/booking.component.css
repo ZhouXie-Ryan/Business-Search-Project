@@ -5,3 +5,13 @@
 a{
     color: inherit;
 }
+
+@media screen and (max-width: 576px) {
+    #reservation-number-header {
+        display: none;
+    }
+    
+    #reservation-number-row{
+        display: none;
+    }
+}

@@ -49,8 +49,8 @@
       </form>
 </div>
 
-<div id="result-table" *ngIf="display_table">
-    <table class="table table-striped">
+<div id="result-table-div" *ngIf="display_table">
+    <table class="table table-striped rounded rounded-4 overflow-hidden" id="result-table" *ngIf="has_result; else : emptyPage">
         <thead>
           <tr>
             <th scope="col">#</th>
@@ -63,19 +63,26 @@
         <tbody>
           <tr *ngFor="let i of businesses_array;" (click)="clickName(i.id)" style="cursor: pointer">
             <th scope="row">{{i.number}}</th>
-            <td><img [src]="i.image" style="width:100px; height:100px"></td>
+            <td><img [src]="i.image" class="table-img img-fluid full-width"></td>
             <td><a [id]="'resultAnchor' + i.number">{{i.name}}</a></td>
             <td>{{i.rating}}</td>
             <td>{{i.dis}}</td>
           </tr>
         </tbody>
       </table>
+
+      <ng-template #emptyPage>
+        <div id="result-table-empty-message" class="container">
+          <h1 style="color: red; margin: 0;">No results available</h1>
+        </div>
+      </ng-template>
+
 </div>
 
 <div id="result-detail" *ngIf="display_detail">
   <a href="javascript:void(0);" id="result-detail-left-arrow" (click)="returnBack()"><i class="bi bi-arrow-left  fa-lg"></i></a>
   <h1 id="business-detail-name-h1">{{business_detail.name}}</h1>
-  <mat-tab-group mat-align-tabs="center" backgroundColor="primary">
+  <mat-tab-group mat-align-tabs="center" backgroundColor="accent" style="min-height:300px">
     <mat-tab id="business-detail" label="Business details">
       <div class="d-flex flex-wrap justify-content-around align-content-start" id="result-detail-bdetail">
         <div class="p-2">
@@ -100,24 +107,58 @@
   
         <div class="p-2">
           <h1>Status</h1>
-          <p>{{business_detail.status}}</p>
+          <p [ngStyle]="{color: getColor()}">{{business_detail.status}}</p>
         </div>
   
         <div class="p-2">
           <h1>Visit yelp for more</h1>
-          <a [href]="business_detail.url" target="_blank">Business link</a>
+          <a [href]="business_detail.url" target="_blank" class="business-link">Business link</a>
         </div>
       </div>
 
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal" *ngIf="!hasReserved(business_detail.id); else : cancelButtonPage"
+      data-bs-keyboard="false" data-bs-backdrop="static">
         Reserve Now
       </button>
 
+      <ng-template #cancelButtonPage>
+        <button type="button" class="btn btn-primary btn-lg" (click)="cancelReservation(business_detail.id)">
+          Cancel reservation
+        </button>
+      </ng-template>
 
 
-      <div>
-        Share on: twitter facebook
+
+      <div id="share-on-div">
+        Share on: <a [href]="twitter_share_link" target="_blank"><i class="bi bi-twitter fa-lg" id="twitter-icon"></i></a>
+        <a [href]="facebook_share_link" target="_blank"><i class="bi bi-facebook" id="facebook-icon"></i></a>
+      </div>
+
+      <div class="container">
+        <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+  
+            <div class="carousel-item active">
+              <img [src]="business_imgs_array[0]" class="d-block" alt="..." class="business-img img-fluid">
+            </div>
+            <div class="carousel-item">
+              <img [src]="business_imgs_array[1]" class="d-block" alt="..." class="business-img img-fluid">
+            </div>
+            <div class="carousel-item">
+              <img [src]="business_imgs_array[2]" class="d-block" alt="..." class="business-img img-fluid">
+            </div>
+  
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden"><i class="bi bi-arrow-left" id="img-left-arrow"></i></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden"><i class="bi bi-arrow-right" id="img-right-arrow"></i></span>
+          </button>
+        </div>
       </div>
   
       <div>
@@ -126,7 +167,9 @@
     </mat-tab>
 
     <mat-tab label="Map location">
-      <google-map [width]="null"></google-map>
+      <google-map [width]="null" [options]="mapOptions">
+        <map-marker [position]="marker.position"></map-marker>
+      </google-map>
     </mat-tab>
 
     <mat-tab label="Reviews">
@@ -150,16 +193,16 @@
 
 
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title" id="exampleModalLabel">Reservation Form</h2>
-        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        
+
       </div>
       <div class="modal-body">
-        <form ngNativeValidate #form2>
+
+        <form class="needs-validation" novalidate (ngSubmit)="submitReservationForm()">
           <h2 style="margin-bottom: 0;">{{business_detail.name}}</h2>
           <div class="form-group">
             <label for="reservation-email" id="form-label">Email</label>
@@ -172,10 +215,14 @@
           <div class="form-group">
             <label for="reservation-date" id="form-label">Date</label>
             <input type="date" class="form-control" id="reservation-date" name="date" [(ngModel)]="date" required>
+            <div class="invalid-feedback">
+              Date is required
+            </div>
           </div>
 
+          <label for="reservation-time1" id="form-label">Time</label>
           <div class="form-row">
-            <label for="reservation-time1" id="form-label">Time</label>
+            
             <div class="col col-md-3">
               <select class="form-control" id="reservation-time1" name="hour" [(ngModel)]="time1" required>
                 <option selected disabled hidden style='display: none' value=''></option>
@@ -198,13 +245,16 @@
                 <option value="45">45</option>
               </select>
             </div>
-            <i class='far fa-clock'></i>
+            <div><i class='far fa-clock'></i></div>
           </div>
           
           <div id="reservation-submit-div">
-            <button type="submit" class="btn btn-danger" id="submit-reservation-button" (click)="form2.checkValidity()? submitReservationForm() : null">Submit</button>
+            <button type="submit" class="btn btn-danger" id="submit-reservation-button">Submit</button>
           </div>
         </form>
+
+
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
@@ -212,7 +262,8 @@
     </div>
   </div>
 </div>
-    
+
+
 
 
 

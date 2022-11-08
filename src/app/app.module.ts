@@ -27,7 +27,7 @@ const appRoutes: Routes = [
   declarations: [
     AppComponent,
     SearchComponent,
-    BookingComponent,
+    BookingComponent
   ],
   imports: [
     BrowserModule,

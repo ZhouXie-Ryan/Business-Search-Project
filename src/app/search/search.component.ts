@@ -2,13 +2,15 @@ import { Component, OnInit, Input } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 
-
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.css']
 })
 export class SearchComponent implements OnInit {
+
+  hostName = "http://localhost:3080/";
+
 
   closeResult = '';
 
@@ -22,9 +24,12 @@ export class SearchComponent implements OnInit {
   businesses_dist : any;
   display_table = false;
   display_detail = false;
+  has_result = true;
 
-  business_detail = {id: '',name : 'Izakaya Osen', address : '2903 Sunset Blvd', cat : 'Sushi Bars | Izakaya | Seafood', 
+  business_detail = {id: '', name : 'Izakaya Osen', address : '2903 Sunset Blvd', cat : 'Sushi Bars | Izakaya | Seafood', 
   phone : '(323) 928-2220', price : '$', status : 'Open', url : 'url'};
+
+  business_imgs_array : any;
 
   business_review : any;
 
@@ -33,13 +38,44 @@ export class SearchComponent implements OnInit {
   time1 = "";
   time2 = "";
 
-  options=['1','2'];
+  options : any;
+
+  twitter_share_link:any;
+  facebook_share_link:any;
+
+
+  email_valid = true;
+  date_valid = true;
+  time_valid = true;
+
+  mapOptions : google.maps.MapOptions = {
+    center: { lat: 38.9987208, lng: -77.2538699 },
+    zoom: 14
+  };
+
+  marker = {position: {lat: 38, lng: -77}};
 
   constructor(private http: HttpClient) { 
     this.getGeoLocation();
   }
 
   ngOnInit(): void {
+      console.log("asdasnjdhasjkdhaskdahsdjsa");
+      //reference https://getbootstrap.com/docs/5.0/forms/validation/
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation');
+      console.log('modal form', forms);
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener('submit', function (event : any) {
+            if (!form.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+  
+            form.classList.add('was-validated');
+          }, false)
+      })
   }
 
   getGeoLocation() {
@@ -64,6 +100,9 @@ export class SearchComponent implements OnInit {
     this.display_detail = false;
   }
 
+  clearDetailAndTable(){
+    
+  }
 
   submitForm() {
     console.log("submit");
@@ -82,7 +121,7 @@ export class SearchComponent implements OnInit {
     param = param.append("location", this.location);
     param = param.append("checkbox", this.autoDetect);
 
-    this.http.get("http://localhost:3080/search", {params: param})
+    this.http.get(this.hostName + "query", {params: param})
     .subscribe((res) => {
       console.log("send req to backend");
       console.log(res);
@@ -96,6 +135,14 @@ export class SearchComponent implements OnInit {
     this.businesses_array = [];
     let business = this.businesses_dist['businesses'];
     let len = Math.min(business.length, 10);
+
+    if(len == 0) {
+      this.has_result = false;
+      return;
+    } else {
+      this.has_result = true;
+    }
+
     for(let i = 0; i < len; i++) {
       // businesses_array = [{id:0, image:'img', name:'name', rating:'rating', dis:'dis'}];
       let id = business[i]["id"];
@@ -124,7 +171,7 @@ export class SearchComponent implements OnInit {
 
   requestDetail(id : any) {
     let param = {id : id};
-    this.http.get("http://localhost:3080/detail", {params: param})
+    this.http.get(this.hostName + "detail", {params: param})
     .subscribe((res : any) => {
       console.log("detail get!");
       console.log(res);
@@ -151,17 +198,30 @@ export class SearchComponent implements OnInit {
       if(res.hours == null || !res.hours[0].is_open_now){
         status = 'Closed';
       } else {
-        status = 'Open';
+        status = 'Open Now';
       }
 
       let url = res.url;
 
-      this.business_detail = {id : id, name : name, address : address, cat : cat, phone : phone, price : price, status : status, url : url};
+      let imgs = res.photos;
+      this.business_imgs_array = res.photos;
+
+      this.business_detail = {id : id, name : name, address : address, cat : cat, 
+                              phone : phone, price : price, status : status, url : url};
       this.requestReview(id);
 
       this.display_table = false;
       this.display_detail = true;
+      this.twitter_share_link = "https://twitter.com/intent/tweet?text=" + "Check%20" + name + "%20on%20Yelp." + "%20&url=" + url;
+      this.facebook_share_link = "https://www.facebook.com/sharer/sharer.php?u=" + url + "&quote=yelp";
       
+      let blat = res.coordinates.latitude;
+      let blon = res.coordinates.longitude;
+      this.mapOptions = {
+        center : {lat: blat, lng: blon}, 
+        zoom : 14
+      };
+      this.marker = {position: {lat: blat, lng: blon}};
       // document.getElementById("result-detail")?.scrollIntoView({
       //   behavior: "smooth",
       //   block: "start",
@@ -173,7 +233,7 @@ export class SearchComponent implements OnInit {
   requestReview(id : any) {
     let param = {id : id};
     this.business_review = [];
-    this.http.get("http://localhost:3080/review", {params: param})
+    this.http.get(this.hostName + "review", {params: param})
     .subscribe((res : any) => {
       console.log("Receive reviews:" , res);
       console.log(res.reviews);
@@ -191,10 +251,17 @@ export class SearchComponent implements OnInit {
   submitReservationForm(){
     console.log('submit reservation form');
     console.log(this.email, this.date, this.time1, this.time2);
+
+    if(this.email == ""|| this.date == "" || this.time1 == ""|| this.time2 == "") {
+      console.log('validation failed');
+      return;
+    }
+
     let len = localStorage.length;
     let tmp = {'id': this.business_detail.id, 'bname': this.business_detail.name, 'date' : this.date, 'time': this.time1 + ':' + this.time2, 'email': this.email};
     localStorage.setItem(this.business_detail.id, JSON.stringify(tmp));
     console.log(localStorage);
+    alert("Reservation created!");
   }
 
   returnBack() {
@@ -204,7 +271,56 @@ export class SearchComponent implements OnInit {
 
   requestAutoComplete(event : Event){
     let inputValue = (<HTMLInputElement>event.target).value;
+    this.options = [];
     console.log('user input', inputValue);
+
+    let param = {inputValue : inputValue};
+    this.http.get(this.hostName + "autocomplete", {params: param})
+    .subscribe((res: any) => {
+      for(let i = 0; i < res.categories.length; i++) {
+        let tmp = res.categories[i].title;
+        this.options.push(tmp);
+      }
+      for(let i = 0; i < res.terms.length; i++) {
+        let tmp = res.terms[i].text;
+        this.options.push(tmp);
+      }
+    });
+  }
+
+  getColor(){
+    return this.business_detail.status == 'Open Now' ? 'green' : 'red';
+  }
+
+  // initModalForm(){
+  //   console.log("asdasnjdhasjkdhaskdahsdjsa");
+  //   //reference https://getbootstrap.com/docs/5.0/forms/validation/
+  //     // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  //     var forms = document.querySelectorAll('.needs-validation');
+  //     console.log('modal form', forms);
+  //     // Loop over them and prevent submission
+  //     Array.prototype.slice.call(forms).forEach(function (form) {
+  //         form.addEventListener('submit', function (event : any) {
+  //           if (!form.checkValidity()) {
+  //             event.preventDefault();
+  //             event.stopPropagation();
+  //           }
+  
+  //           form.classList.add('was-validated');
+  //         }, false)
+  //     })
+  // }
+
+  hasReserved(id : any) {
+    if(localStorage.getItem(id) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  cancelReservation(id : any){
+    localStorage.removeItem(id);
   }
 
 }

@@ -1,9 +1,9 @@
 <nav class="navbar navbar-light navbar-expand-sm">
   <ul class="navbar-nav ml-auto">
-    <li class="nav-item active">
+    <li class="nav-item active" [ngClass]="{'nav-circle': path == '/search'}">
       <a class="nav-link" href="/search">Search</a>
     </li>
-    <li class="nav-item active">
+    <li class="nav-item active" [ngClass]="{'nav-circle': path == '/booking'}">
       <a class="nav-link" href="/booking">My Bookings</a>
     </li>
   </ul>

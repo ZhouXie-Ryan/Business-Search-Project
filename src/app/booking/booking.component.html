@@ -1,10 +1,10 @@
-<div class="container">
+
     <div id="booking-table-div" *ngIf="!is_empty; else emptyPage">
         <h1 style="text-align: center;">List of your reservations</h1>
         <table class="table">
             <thead>
               <tr>
-                <th scope="col">#</th>
+                <th scope="col" id="reservation-number-header">#</th>
                 <th scope="col">Business Name</th>
                 <th scope="col">Date</th>
                 <th scope="col">Time</th>
@@ -14,7 +14,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let i of booking_array; let j=index;" [id]="i.id">
-                <th scope="row">{{j + 1}}</th>
+                <th scope="row" id="reservation-number-row">{{j + 1}}</th>
                 <td>{{i.bname}}</td>
                 <td>{{i.date}}</td>
                 <td>{{i.time}}</td>
@@ -28,4 +28,4 @@
     <ng-template #emptyPage>
         <h1 style="color: red;">No reservations to show</h1>
     </ng-template>
-</div>
+
