@@ -1,6 +1,10 @@
 # Business-Search-Project
 
+URL:
 https://business-search-project-zxryan.uw.r.appspot.com/
+
+IOS version:
+https://github.com/ZhouXie-Ryan/Business-Search-ios
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.6.
 
