@@ -48,7 +48,7 @@ app.get('/query', (req,res) => {
         axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
                 address : location,
-                key : 'AIzaSyBbnaHmkNxX3AYDtSqm8EpLe3gN2NBsQ2k'
+                key : 'googleapikey'
             }
         })
         .then(resp => {
